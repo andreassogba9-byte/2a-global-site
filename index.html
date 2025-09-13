@@ -68,19 +68,49 @@
     &copy; 2025 2A GLOBAL SERVICES - Tous droits réservés
   </footer>
 </body>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mon site</title>
+</head>
+<body>
+
+  <!-- Ici ton contenu du site -->
+  <h1>Bienvenue sur mon site</h1>
+  <p>Voici mes services et produits...</p>
+
+  <!-- ✅ Mets le code Tawk.to bilingue ici -->
   <!--Start of Tawk.to Script-->
-<script type="text/javascript">
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/68c49d6538a27719250598b9/1j500dm0r';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
-</script>
-<!--End of Tawk.to Script-->
+  <script type="text/javascript">
+  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+
+  (function(){
+    var s1=document.createElement("script"),
+        s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+
+    // Détecter la langue du navigateur
+    var userLang = navigator.language || navigator.userLanguage;
+
+    // Si navigateur en français => widget FR
+    if(userLang.startsWith("fr")){
+      s1.src='https://embed.tawk.to/68c49d6538a27719250598b9/1j500dm0r';
+    }
+    // Sinon => widget EN
+    else {
+      s1.src='https://embed.tawk.to/68c5f580e72aad1923ddfa4b/1j52kdvqi';
+    }
+
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+  })();
+  </script>
+  <!--End of Tawk.to Script-->
+
+</body>
+</html>
 </html>
 
 

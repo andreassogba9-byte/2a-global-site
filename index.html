@@ -106,6 +106,158 @@
   </script>
   <!--End of Tawk.to Script-->
 
+  <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>2A Global Site</title>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .hidden { display: none; }
+    .produit { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h1>Bienvenue sur 2A Global Site</h1>
+
+  <!-- Formulaire inscription -->
+  <h2>Créer un compte</h2>
+  <input type="email" id="signup-email" placeholder="Votre email"><br>
+  <input type="password" id="signup-password" placeholder="Votre mot de passe"><br>
+  <select id="signup-role">
+    <option value="acheteur">Acheteur</option>
+    <option value="vendeur">Vendeur</option>
+  </select><br>
+  <button onclick="signUp()">S’inscrire</button>
+
+  <!-- Formulaire connexion -->
+  <h2>Se connecter</h2>
+  <input type="email" id="login-email" placeholder="Votre email"><br>
+  <input type="password" id="login-password" placeholder="Votre mot de passe"><br>
+  <button onclick="signIn()">Connexion</button>
+
+  <div id="message"></div>
+
+  <!-- Section pour vendeur -->
+  <div id="vendeur-section" class="hidden">
+    <h2>Ajouter un produit</h2>
+    <input type="text" id="produit-nom" placeholder="Nom du produit"><br>
+    <input type="number" id="produit-prix" placeholder="Prix"><br>
+    <textarea id="produit-description" placeholder="Description"></textarea><br>
+    <button onclick="ajouterProduit()">Ajouter</button>
+  </div>
+
+  <!-- Section pour afficher produits -->
+  <h2>Produits disponibles</h2>
+  <div id="produits"></div>
+
+  <script>
+    // 🔑 Infos Supabase (tes données)
+    const SUPABASE_URL = "https://kiebsjqdjnykpuhjehoh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtpZWJzanFkam55a3B1aGplaG9oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgxNDE0NDEsImV4cCI6MjA3MzcxNzQ0MX0.RjGqRCp8eDn3QCUWushVdcRexdYdDKgsYQr3BQ3KyEI";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentUser = null;
+    let currentRole = null;
+
+    // Inscription
+    async function signUp() {
+      const email = document.getElementById("signup-email").value;
+      const password = document.getElementById("signup-password").value;
+      const role = document.getElementById("signup-role").value;
+
+      const { data, error } = await supabaseClient.auth.signUp({ email, password });
+      if (error) {
+        document.getElementById("message").innerText = "Erreur: " + error.message;
+      } else {
+        await supabaseClient.from("utilisateurs").insert([{ email, role }]);
+        document.getElementById("message").innerText = "Inscription réussie ! Vérifiez vos mails.";
+      }
+    }
+
+    // Connexion
+    async function signIn() {
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error) {
+        document.getElementById("message").innerText = "Erreur: " + error.message;
+      } else {
+        currentUser = data.user;
+        const { data: userData } = await supabaseClient.from("utilisateurs").select("role").eq("email", email).single();
+        currentRole = userData.role;
+
+        document.getElementById("message").innerText = "Connexion réussie en tant que " + currentRole;
+
+        if (currentRole === "vendeur") {
+          document.getElementById("vendeur-section").classList.remove("hidden");
+        }
+
+        chargerProduits();
+      }
+    }
+
+    // Ajouter produit
+    async function ajouterProduit() {
+      if (currentRole !== "vendeur") return;
+
+      const nom = document.getElementById("produit-nom").value;
+      const prix = document.getElementById("produit-prix").value;
+      const description = document.getElementById("produit-description").value;
+
+      const { error } = await supabaseClient.from("produits").insert([
+        { nom, prix, description, vendeur_id: currentUser.id }
+      ]);
+
+      if (error) {
+        alert("Erreur: " + error.message);
+      } else {
+        alert("Produit ajouté !");
+        chargerProduits();
+      }
+    }
+
+    // Charger produits
+    async function chargerProduits() {
+      const { data: produits, error } = await supabaseClient.from("produits").select("*");
+      const container = document.getElementById("produits");
+      container.innerHTML = "";
+
+      if (produits) {
+        produits.forEach(p => {
+          const div = document.createElement("div");
+          div.className = "produit";
+          div.innerHTML = `<strong>${p.nom}</strong><br>Prix: ${p.prix} FCFA<br>${p.description}`;
+
+          if (currentRole === "acheteur") {
+            const btn = document.createElement("button");
+            btn.innerText = "Acheter";
+            btn.onclick = () => passerCommande(p.id);
+            div.appendChild(btn);
+          }
+
+          container.appendChild(div);
+        });
+      }
+    }
+
+    // Passer commande
+    async function passerCommande(produitId) {
+      if (!currentUser || currentRole !== "acheteur") return;
+      const { error } = await supabaseClient.from("commandes").insert([
+        { produit_id: produitId, acheteur_id: currentUser.id }
+      ]);
+      if (error) {
+        alert("Erreur: " + error.message);
+      } else {
+        alert("Commande passée !");
+      }
+    }
+  </script>
+</body>
+      </html>
 </body>
 </html>
 </html>
